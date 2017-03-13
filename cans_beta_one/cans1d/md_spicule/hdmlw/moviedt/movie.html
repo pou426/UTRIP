@@ -1,0 +1,356 @@
+<HTML>
+
+<HEAD>
+<TITLE>cans1d/md_spicule/hdmlw</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="White">
+
+<CENTER>
+
+<H1> cans1d/md_spicule/hdmlw </H1>
+<P>
+
+<TABLE BORDER="10" CELLPADDING="8">
+<TR>
+<TD align="center"> 
+
+<img src = "000.png" NAME=animation>
+
+</TD></TR>
+</TABLE>
+<P>
+
+<FORM NAME="form">
+ <INPUT TYPE=button VALUE="Start" onClick="start_play();">
+ <INPUT TYPE=button VALUE="Pause" onClick="stop_play();">
+ <INPUT TYPE=button VALUE="Faster" onClick="delay/=inc; show_delay();">
+ <INPUT TYPE=button VALUE="Slower" onClick="delay*=inc; show_delay();">
+ <INPUT TYPE=button VALUE="Step" onClick="step();">
+ <INPUT TYPE=button NAME="direction" VALUE="Reverse" onClick="reverse();">
+ <INPUT TYPE=button VALUE="Swing_Mode" onClick="swing_mode();">
+ <BR>
+ Frame: <INPUT TYPE=text VALUE="" NAME="frame" SIZE=30> 
+<!-- &nbsp;Delay (ms): <INPUT TYPE=text VALUE="" NAME="delay" SIZE=6> //-->
+
+</FORM>
+</CENTER>
+
+<P>
+<HR>
+<B>Document</B>: <I><SCRIPT>document.write(document.title);</SCRIPT></I><BR>
+<B>URL</B>: <I><SCRIPT>document.write(document.URL);</SCRIPT></I><BR>
+<B>Last Update</B>: <I><SCRIPT>document.write(document.lastModified);</SCRIPT></I><BR>
+
+</BODY>
+</HTML>
+
+<SCRIPT>
+<!--
+
+// Javascript program to produce fast animations by reading from cache
+// Written: 7 July 1997, Zarro, NASA/GSFC
+
+var imax = 201, inc = 1.50, delay = 250;
+var num_loaded_images = 0;
+var frame=-1;
+var timeout_id=null;
+var dir=1, playing=0;
+var run = 0;
+var bname = "Reverse";
+var swingon = 0;
+
+// function to count images as they are loaded into cache
+
+function count_images() 
+{ 
+ if (++num_loaded_images == imax) 
+  animate(); 
+ else {
+  document.animation.src=images[num_loaded_images-1].src;
+  document.form.frame.value="Loading "+num_loaded_images+" of "+imax; 
+ }
+}
+
+temp = new Array(imax);          
+
+temp[0]="000.png";
+temp[1]="001.png";
+temp[2]="002.png";
+temp[3]="003.png";
+temp[4]="004.png";
+temp[5]="005.png";
+temp[6]="006.png";
+temp[7]="007.png";
+temp[8]="008.png";
+temp[9]="009.png";
+temp[10]="010.png";
+temp[11]="011.png";
+temp[12]="012.png";
+temp[13]="013.png";
+temp[14]="014.png";
+temp[15]="015.png";
+temp[16]="016.png";
+temp[17]="017.png";
+temp[18]="018.png";
+temp[19]="019.png";
+temp[20]="020.png";
+temp[21]="021.png";
+temp[22]="022.png";
+temp[23]="023.png";
+temp[24]="024.png";
+temp[25]="025.png";
+temp[26]="026.png";
+temp[27]="027.png";
+temp[28]="028.png";
+temp[29]="029.png";
+temp[30]="030.png";
+temp[31]="031.png";
+temp[32]="032.png";
+temp[33]="033.png";
+temp[34]="034.png";
+temp[35]="035.png";
+temp[36]="036.png";
+temp[37]="037.png";
+temp[38]="038.png";
+temp[39]="039.png";
+temp[40]="040.png";
+temp[41]="041.png";
+temp[42]="042.png";
+temp[43]="043.png";
+temp[44]="044.png";
+temp[45]="045.png";
+temp[46]="046.png";
+temp[47]="047.png";
+temp[48]="048.png";
+temp[49]="049.png";
+temp[50]="050.png";
+temp[51]="051.png";
+temp[52]="052.png";
+temp[53]="053.png";
+temp[54]="054.png";
+temp[55]="055.png";
+temp[56]="056.png";
+temp[57]="057.png";
+temp[58]="058.png";
+temp[59]="059.png";
+temp[60]="060.png";
+temp[61]="061.png";
+temp[62]="062.png";
+temp[63]="063.png";
+temp[64]="064.png";
+temp[65]="065.png";
+temp[66]="066.png";
+temp[67]="067.png";
+temp[68]="068.png";
+temp[69]="069.png";
+temp[70]="070.png";
+temp[71]="071.png";
+temp[72]="072.png";
+temp[73]="073.png";
+temp[74]="074.png";
+temp[75]="075.png";
+temp[76]="076.png";
+temp[77]="077.png";
+temp[78]="078.png";
+temp[79]="079.png";
+temp[80]="080.png";
+temp[81]="081.png";
+temp[82]="082.png";
+temp[83]="083.png";
+temp[84]="084.png";
+temp[85]="085.png";
+temp[86]="086.png";
+temp[87]="087.png";
+temp[88]="088.png";
+temp[89]="089.png";
+temp[90]="090.png";
+temp[91]="091.png";
+temp[92]="092.png";
+temp[93]="093.png";
+temp[94]="094.png";
+temp[95]="095.png";
+temp[96]="096.png";
+temp[97]="097.png";
+temp[98]="098.png";
+temp[99]="099.png";
+temp[100]="100.png";
+temp[101]="101.png";
+temp[102]="102.png";
+temp[103]="103.png";
+temp[104]="104.png";
+temp[105]="105.png";
+temp[106]="106.png";
+temp[107]="107.png";
+temp[108]="108.png";
+temp[109]="109.png";
+temp[110]="110.png";
+temp[111]="111.png";
+temp[112]="112.png";
+temp[113]="113.png";
+temp[114]="114.png";
+temp[115]="115.png";
+temp[116]="116.png";
+temp[117]="117.png";
+temp[118]="118.png";
+temp[119]="119.png";
+temp[120]="120.png";
+temp[121]="121.png";
+temp[122]="122.png";
+temp[123]="123.png";
+temp[124]="124.png";
+temp[125]="125.png";
+temp[126]="126.png";
+temp[127]="127.png";
+temp[128]="128.png";
+temp[129]="129.png";
+temp[130]="130.png";
+temp[131]="131.png";
+temp[132]="132.png";
+temp[133]="133.png";
+temp[134]="134.png";
+temp[135]="135.png";
+temp[136]="136.png";
+temp[137]="137.png";
+temp[138]="138.png";
+temp[139]="139.png";
+temp[140]="140.png";
+temp[141]="141.png";
+temp[142]="142.png";
+temp[143]="143.png";
+temp[144]="144.png";
+temp[145]="145.png";
+temp[146]="146.png";
+temp[147]="147.png";
+temp[148]="148.png";
+temp[149]="149.png";
+temp[150]="150.png";
+temp[151]="151.png";
+temp[152]="152.png";
+temp[153]="153.png";
+temp[154]="154.png";
+temp[155]="155.png";
+temp[156]="156.png";
+temp[157]="157.png";
+temp[158]="158.png";
+temp[159]="159.png";
+temp[160]="160.png";
+temp[161]="161.png";
+temp[162]="162.png";
+temp[163]="163.png";
+temp[164]="164.png";
+temp[165]="165.png";
+temp[166]="166.png";
+temp[167]="167.png";
+temp[168]="168.png";
+temp[169]="169.png";
+temp[170]="170.png";
+temp[171]="171.png";
+temp[172]="172.png";
+temp[173]="173.png";
+temp[174]="174.png";
+temp[175]="175.png";
+temp[176]="176.png";
+temp[177]="177.png";
+temp[178]="178.png";
+temp[179]="179.png";
+temp[180]="180.png";
+temp[181]="181.png";
+temp[182]="182.png";
+temp[183]="183.png";
+temp[184]="184.png";
+temp[185]="185.png";
+temp[186]="186.png";
+temp[187]="187.png";
+temp[188]="188.png";
+temp[189]="189.png";
+temp[190]="190.png";
+temp[191]="191.png";
+temp[192]="192.png";
+temp[193]="193.png";
+temp[194]="194.png";
+temp[195]="195.png";
+temp[196]="196.png";
+temp[197]="197.png";
+temp[198]="198.png";
+temp[199]="199.png";
+temp[200]="200.png";
+
+// actual loading is done here
+ 
+images = new Array(imax);
+for (var i = 0 ; i < imax; i++) {
+ images[i]= new Image();
+ images[i].onload=count_images;
+ images[i].src=temp[i];
+}
+
+// function to start movie
+
+function start_play() {
+ if (playing == 0) {
+  if (timeout_id == null && num_loaded_images==imax) animate();
+ }
+} 
+
+// function to stop movie
+
+function stop_play() {
+ if (timeout_id) clearTimeout(timeout_id); 
+  timeout_id=null;
+  playing = 0;
+} 
+
+// function to control swing mode
+function swing_mode() {
+  if (swingon) swingon=0; else swingon=1;
+}
+  
+
+// function to do the animation when all images are loaded
+
+function animate()
+{
+ var j;
+ frame=(frame+dir+imax)%imax;
+ j=frame+1;
+ document.animation.src=images[frame].src;
+ document.form.frame.value="Displaying "+j+" of "+imax;
+ if (swingon && (j == imax || frame == 0)) reverse();
+ timeout_id=setTimeout("animate()",delay);
+ playing=1;
+}
+
+
+// function to control stepping thru each frame
+
+function step()
+{
+ var j;
+ if (timeout_id) clearTimeout(timeout_id); timeout_id=null;
+ frame=(frame+dir+imax)%imax;
+ j=frame+1;
+ document.animation.src=images[frame].src;
+ document.form.frame.value="Displaying "+j+" of "+imax;
+ playing=0;
+}
+
+// function to control direction of animation
+
+function reverse()
+{
+ dir=-dir;
+ if (dir > 0) document.form.direction.value="Reverse"; bname="Reverse";
+ if (dir < 0) document.form.direction.value="Forward"; bname="Forward";
+}
+
+// function to display delay between frames (not implemented yet)
+
+function show_delay()
+{
+// document.form.delay.value=delay;
+}
+
+// -->
+</SCRIPT>
+

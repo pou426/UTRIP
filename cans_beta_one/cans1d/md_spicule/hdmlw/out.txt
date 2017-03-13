@@ -1,0 +1,4 @@
+  write    step=       0 time= 0.000E+00 nd =  1
+  write    step=  100000 time= 0.187E+00 nd =  2
+  stop     step=  100000 time= 0.187E+00
+   ### normal stop ###

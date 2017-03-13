@@ -1,0 +1,15 @@
+!PATH='~/idl/cans:'+!PATH
+narg=-1
+
+dacgetparam,'params.txt','gm',gm
+dacgetparam,'params.txt','ix',ix
+dacgetparam,'params.txt','ro1',ro1
+dacgetparam,'params.txt','pr1',pr1
+dacget0s,'t.dac',t,narg=narg
+nx=n_elements(t)
+dacget1d,'x.dac',x
+dacget1s,'ro.dac',ro,narg=narg
+dacget1s,'pr.dac',pr,narg=narg
+dacget1s,'vx.dac',vx,narg=narg
+te=pr/ro*gm
+end

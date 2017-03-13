@@ -1,0 +1,172 @@
+
+
+CANS1D cndsor モジュール
+
+       ver.0.2  2002.3.1
+
+----------------------------------------------------------------------
+
+◯概要
+
+このモジュールは、熱伝導を陰解法（時間精度1次：行列反転はRed Black SOR法）
+で解くためのものです。
+
+----------------------------------------------------------------------
+
+◯インストール
+
+1. Makefileを編集。マクロ"CANS_LIB_DIR"の値を適当に設定する。
+2. makeによりコンパイル。
+
+----------------------------------------------------------------------
+
+◯使用法
+
+CANS1Dディストリビューションのmd_cndtb（一様断面）または
+md_cndsp（非一様断面）を参考にする。
+
+(開始)
+初期処理
+    モデル・パラメータの定義
+      物理量ro pr、グリッドx dx dxmなど。断面非一様の場合はscも。
+      パラメータ gm rkap0が必須。
+      
+時間積分ループ
+    時間刻み決定 dt
+    熱伝導積分 （例：流体一様断面。MHD、非一様断面など状況に応じて使い分ける）
+        call cndsor(ro,pr,mi,err,dt,gm,rkap0,margin,dx,dxm,ix)
+    境界条件
+    負値チェック
+時間積分ループ脱出分岐テスト
+終了処理
+(終了)
+
+----------------------------------------------------------------------
+
+◯使用する外部サブルーチン
+
+このモジュールは以下のサブルーチンに依存するので、
+実行形式ファイルをつくるときに以下のどちらかの方法をとる。
+  (1) ライブラリからリンクする
+  (2) ソースをコンパイルリンクする
+
+-----------------------------
+CANS1D common モジュール
+   prtote(te,ro,pr,gm,ix)
+   tetopr(ro,pr,te,gm,ix)
+   scrdy(dsc,dsch,sc,sch,dx,dxm,ix)  （非一様断面計算のときのみ）
+
+CANS1D bc モジュール
+----------------------------------------------------------------------
+
+◯各サブルーチンと引数の説明。
+
+cndsor(ro,pr,mi,err,dt,gm,rkap0,margin,dx,dxm,ix)
+cndsor_c(ro,pr,mi,err,dt,gm,rkap0,margin,sc,scm,dx,dxm,ix)
+cndsor_m(ro,pr,mi,err,dt,gm,rkap0,margin,bxm,by,dx,dxm,ix)
+cndsor_mc(ro,pr,mi,err,dt,gm,rkap0,margin,bxm,by,sc,scm,dx,dxm,ix)
+cndsor_m3(ro,pr,mi,err,dt,gm,rkap0,margin,bxm,by,bz,dx,dxm,ix)
+cndsor_m3c(ro,pr,mi,err,dt,gm,rkap0,margin,bxm,by,bz,sc,scm,dx,dxm,ix)
+  目的
+    熱伝導エンジン本体
+        流体一様断面のときは cndsor
+        非一様断面のときは cndsor_c
+        MHDのときは cndsor_m
+        MHD非一様断面のときは  cndsor_mc
+        3成分MHDのときは cndsor_m3
+        3成分MHD非一様断面のときは  cndsor_m3c
+  入出力
+    pr(ix)     圧力配列
+  出力
+    mi 反復回数
+    err 残差最終値
+  入力
+    ro(ix)     密度配列
+    dt 時間刻み
+    gm 比熱比γ
+    rkap0 熱伝導の強さ
+            1/rkap0が、te=1,ro=1のときの無次元熱伝導時間スケール
+    margin 境界のそでの幅
+    dx(ix) グリッド刻み（グリッド点上で定義）
+    dxm(ix) グリッド刻み（グリッド点間で定義）
+    ix    データの大きさ
+    sc(ix)  断面積（グリッド点上で定義）
+    scm(ix)  断面積（グリッド点間で定義）
+    by(ix),bz(ix)  磁場（グリッド点上で定義）
+    bxm(ix)   磁場（グリッド点間で定義）
+    ix    データの大きさ
+  内部パラメータ
+    omsor  SOR過緩和パラメータ(1<omsor<2)
+    milim  SOR反復回数miの最大臨界値。
+    eps0   SOR残差の目標値。
+
+-------------------------------------------
+ccfspt(cmat,src,rkap0,gm,dt,te,ro,dx,dxm,ix)
+ccfspt_c(cmat,src,rkap0,gm,dt,te,ro,sc,scm,dx,dxm,ix)
+ccfspt_m(cmat,src,rkap0,gm,dt,te,ro,bxm,by,dx,dxm,ix)
+ccfspt_mc(cmat,src,rkap0,gm,dt,te,ro,bxm,by,sc,scm,dx,dxm,ix)
+ccfspt_m3(cmat,src,rkap0,gm,dt,te,ro,bxm,by,bz,dx,dxm,ix)
+ccfspt_m3c(cmat,src,rkap0,gm,dt,te,ro,bxm,by,bz,sc,scm,dx,dxm,ix)
+ccfunf(cmat,src,rkap0,gm,dt,te,ro,dx,dxm,ix)
+ccfunf_c(cmat,src,rkap0,gm,dt,te,ro,sc,scm,dx,dxm,ix)
+  目的
+    熱伝導係数（spt: Spitzer型、unf:一様）の定義
+   （ccf???_cは非一様断面用；ccf???_mは磁場依存性あり；ccf???_m3は3成分磁場）
+  出力
+    cmat(ix,3)  熱伝導方程式を線形離散化してできる係数行列
+    src(ix)     熱伝導方程式を線形離散化してできる定数ベクトル
+  入力
+    dt 時間刻み
+    gm 比熱比γ
+    rkap0 熱伝導の強さ
+            1/rkap0が、te=1,ro=1のときの無次元熱伝導時間スケール
+    sc(ix)  断面積（グリッド点上で定義）
+    scm(ix)  断面積（グリッド点間で定義）
+    ix    データの大きさ
+    ro(ix)     密度配列
+    te(ix)     温度配列
+    by(ix),bz(ix),bxm(ix)  磁場配列
+    dx(ix) グリッド刻み（グリッド点上で定義）
+    dxm(ix) グリッド刻み（グリッド点間で定義）
+
+-------------------------------------------
+residue(anorm,res,margin,ix)
+  目的
+    SOR法の残差の計算
+  出力
+    anorm  残差
+  入力
+    res(ix)    SOR用残差配列
+    margin 境界のそでの幅
+    ix    データの大きさ
+
+-------------------------------------------
+sorbr(te,res,mrb,omsor,cmat,src,margin,ix)
+  目的
+    Red Black SOR法反復部分
+  入出力
+    te(ix)     温度配列
+  出力
+    res(ix)    SOR用残差配列
+  入力
+    cmat(ix,3)  係数行列
+    src(ix)     定数ベクトル
+    mrb   Black Red法の反復番号(1または2) Black段階(1) Red段階(2)
+    omsor     SOR過緩和パラメータ(1<omsor<2)
+    margin 境界のそでの幅
+    ix    データの大きさ
+
+-------------------------------------------
+cndprm(rkap0,gm,tenml,denml,rlnml)
+  目的
+    Spitzerモデルに基づいて、有次元量を無次元パラメータに変換
+  出力
+    rkap0 熱伝導の強さ
+            1/rkap0が、te=1,ro=1のときの無次元熱伝導時間スケール
+  入力
+    gm 比熱比γ
+    tenml 温度単位[K]
+    denml 密度単位[cm^-3]
+    tenml 長さ単位[cm]
+
+----------------------------------------------------------------------

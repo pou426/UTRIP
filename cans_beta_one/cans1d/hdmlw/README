@@ -1,0 +1,200 @@
+
+
+CANS1D hdmlw モジュール
+
+       ver.0.3  2003.4.15
+
+----------------------------------------------------------------------
+
+◯概要
+
+このモジュールは、流体力学方程式・MHD方程式を
+改良Lax-Wendroff＋人工粘性法で解くためのものです。
+具体的に解いている方程式系についてはReadme.pdfを参照のこと
+
+----------------------------------------------------------------------
+
+◯インストール
+
+1. Makefileを編集。マクロ"CANS_LIB_DIR"の値を適当に設定する。
+2. makeによりコンパイル。
+
+----------------------------------------------------------------------
+
+◯使用法
+
+CANS1Dディストリビューションのmd_shktb（流体一様断面）、
+md_sedov（流体非一様断面）、md_mhdshktb（MHD一様断面）、
+md_spicule（MHD非一様磁場・重力）、 md_ishktb（等温流体一様断面）、
+md_awdamp （MHD3成分）を参考にする。
+
+(開始)
+初期処理
+    モデル・パラメータの定義
+      物理量ro pr、グリッドx dx dxmなど。断面非一様の場合はscも。
+      パラメータ gm が必須。
+      
+時間積分ループ
+    時間刻み決定 dt （ふつうはcfl_hや cfl_mを使う）
+    流体積分         
+
+        流体一様断面のときは
+        call mlw_h(ro,pr,vx,dt,gm,dx,rdx,rdxm,ux0,ux1,ix)
+        そのほかMHDや非一様断面など状況に応じて呼ぶサブルーチンを変える
+
+    境界条件
+    負値チェック
+
+時間積分ループ脱出分岐テスト
+終了処理
+(終了)
+
+----------------------------------------------------------------------
+
+◯使用する外部サブルーチン
+
+このモジュールは以下のサブルーチンに依存するので、
+実行形式ファイルをつくるときに以下のどちらかの方法をとる。
+  (1) ライブラリからリンクする
+  (2) ソースをコンパイルリンクする
+
+-----------------------------
+CANS1D common モジュール
+   cfl_*
+   grdrdy
+   scrdy（非一様断面計算のとき）
+
+----------------------------------------------------------------------
+
+◯各サブルーチンと引数の説明。
+
+mlw_a(ro,dt,vx,vxm,dx,dxm,ix)
+
+mlw_h(ro,pr,vx,dt,gm,dx,dxm,ix)
+mlw_h_c(ro,pr,vx,dt,gm,
+     &             sc,dsc,scm,dscm,dx,dxm,ix)
+mlw_h_g(ro,pr,vx,dt,gm,gx,gxm,dx,dxm,ix)
+mlw_h_cg(ro,pr,vx,dt,gm,gx,gxm
+     &             sc,dsc,scm,dscm,dx,dxm,ix)
+
+mlw_ht(ro,vx,dt,cs2,dx,dxm,ix)
+mlw_ht_c(ro,vx,dt,cs2,
+     &             sc,dsc,scm,dscm,dx,dxm,ix)
+mlw_ht_g(ro,vx,dt,cs2,gx,gxm,dx,dxm,ix)
+mlw_ht_cg(ro,vx,dt,cs2,gx,gxm
+     &             sc,dsc,scm,dscm,dx,dxm,ix)
+
+mlw_m(ro,pr,vx,vy,by,bx,bxm,dt,gm,
+     &             dx,dxm,ix)
+mlw_m_g(ro,pr,vx,vy,by,bx,bxm,dt,gm,gx,gxm,gy,gym,
+     &             dx,dxm,ix)
+
+mlw_m3(ro,pr,vx,vy,vz,by,bz,bx,bxm,dt,gm,
+     &             dx,dxm,ix)
+mlw_m3_g(ro,pr,vx,vy,vz,by,bz,bx,bxm,dt,gm,gx,gxm,gy,gym,
+     &             dx,dxm,ix)
+
+mlw_mt(ro,vx,vy,by,bx,bxm,dt,cs2,
+     &             dx,dxm,ix)
+mlw_mt_g(ro,vx,vy,by,bx,bxm,dt,cs2,gx,gxm,gy,gym,
+     &             dx,dxm,ix)
+
+mlw_m3t(ro,vx,vy,vz,by,bz,bx,bxm,dt,cs2,
+     &             dx,dxm,ix)
+mlw_m3t_g(ro,vx,vy,vz,by,bz,bx,bxm,dt,cs2,gx,gxm,gy,gym,
+     &             dx,dxm,ix)
+
+mlw_m_bg(ro,pr,vx,vy,by,bx,bxm,dt,gm
+     &             ,gx,gxm,sc,dsc,scm,dscm,rr,rrm,drr,drrm,dx,dxm,ix)
+mlw_mt_bg(ro,vx,vy,by,bx,bxm,dt,cs2
+     &             ,gx,gxm,sc,dsc,scm,dscm,rr,rrm,drr,drrm,dx,dxm,ix)
+
+  目的
+    流体エンジン本体
+      mlw_a     移流
+      mlw_h     流体一様断面用
+      mlw_h_c   流体非一様断面用
+      mlw_h_g   流体一様断面重力あり用
+      mlw_h_cg  流体非一様断面重力あり用
+      mlw_ht    等温流体一様断面用
+      mlw_ht_c  等温流体非一様断面用
+      mlw_ht_g  等温流体一様断面重力あり用
+      mlw_ht_cg 等温流体非一様断面重力あり用
+      mlw_m     MHD一様断面用
+      mlw_m_g   MHD一様断面重力あり用
+      mlw_m3    3成分MHD一様断面用
+      mlw_m3_g  3成分MHD一様断面重力あり用
+      mlw_mt     等温MHD一様断面用
+      mlw_mt_g   等温MHD一様断面重力あり用
+      mlw_m3t    等温3成分MHD一様断面用
+      mlw_m3t_g  等温3成分MHD一様断面重力あり用
+      mlw_m_bg  MHD非一様磁場・重力あり用
+      mlw_mt_bg  等温MHD非一様磁場・重力あり用
+  入出力
+    ro(ix) pr(ix) vx(ix) vy(ix) by(ix) vz(ix) bz(ix) 物理量データ
+  入力
+    dt 時間刻み
+    gm 比熱比γ
+    cs2 音速**2
+    gx(ix) gxm(ix) 重力
+    gy(ix) gym(ix) 重力
+    bx(ix) bxm(ix) 重力
+    sc(ix)   断面積（グリッド点上で定義）
+    scm(ix)  断面積（グリッド点間で定義）
+    dsc(ix)   微分断面積（グリッド点上で定義）
+    dscm(ix)  微分断面積（グリッド点間で定義）
+    dx(ix) グリッド刻み（グリッド点上で定義）
+    dxm(ix) グリッド刻み（グリッド点間で定義）
+    ix    データの大きさ
+  内部パラメータ
+    qav 人工粘性係数
+-------------------------------------------
+
+mlwhalf(u,un,du,dt,f,dxi,dxim,ix)
+mlwsrch(un,du,dt,s,ix)
+  目的
+    改良Lax-Wendroff法第1段の変分計算
+  入出力
+    du(ix) 変分
+  出力
+    un(ix) 物理量（第1段進展後のグリッド間上）
+  入力 
+    dt 時間刻み
+    u(ix)  物理量配列（グリッド点上）
+    f(ix)  フラックス（グリッド点上）
+    s(ix)  ソース項（グリッド点上）
+    dxi(ix)   1/dx
+    dxim(ix)  1/dxm
+    ix    データの大きさ
+-------------------------------------------
+
+mlwfull(du,dt,f,dxi,ix)
+mlwsrcf(du,dt,s,ux0,ux1,ix)
+  目的
+    改良Lax-Wendroff法第2段の変分計算
+  入出力
+    du(ix) 変分
+  入力 
+    dt 時間刻み
+    f(ix)  フラックス（第1段進展後のグリッド間上）
+    s(ix)  ソース項（第1段進展後のグリッド間上）
+    dxi(ix)  1/dx
+    ux0(ix)   dx(i)/dxm(i)/2
+    ux1(ix)   dx(i-1)/dxm(i)/2
+    ix    データの大きさ
+-------------------------------------------
+
+mlwartv(u,du,dt,qx,dxi,dxim,ix)
+  目的
+    人工粘性
+  入出力
+    du(ix) 変分
+  入力 
+    vsc(ix) 人工粘性係数
+    u(ix)  物理量配列（グリッド点上）
+    dt 時間刻み
+    dxi(ix)   1/dx
+    dxim(ix)  1/dxm
+    ix    データの大きさ
+
+-------------------------------------------

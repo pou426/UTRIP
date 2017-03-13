@@ -1,0 +1,302 @@
+
+
+CANS1D hdcip モジュール
+
+       ver.0.2  2002.3.1
+
+----------------------------------------------------------------------
+
+◯概要
+
+このモジュールは、流体力学方程式・MHD方程式を
+CIP＋MOC＋CT法で解くためのものです。
+具体的に解いている方程式系についてはReadme.pdfを参照のこと
+
+----------------------------------------------------------------------
+
+◯インストール
+
+1. Makefileを編集。マクロ"CANS_LIB_DIR"の値を適当に設定する。
+2. makeによりコンパイル。
+
+----------------------------------------------------------------------
+
+◯使用法
+
+CANS1Dディストリビューションのmd_shktb（流体一様断面）、
+md_sedov（流体非一様断面）、md_mhdshktb（MHD一様断面）、
+md_spicule（MHD非一様断面）を参考にする。
+
+(開始)
+初期処理
+    モデル・パラメータの定義
+      物理量ro pr、グリッドx dx dxmなど。断面非一様の場合はscも。
+      パラメータ gm が必須。
+
+      call ciprdy_h(te,vxm,rodx,tedx,vxdxm,ro,pr,vx,gm,dx,dxm,ix)
+      物理量の微分を求める
+      
+時間積分ループ
+    時間刻み決定 dt （ふつうはcflhdや cflmhdを使う）
+    流体積分         
+
+        流体一様断面のときは
+        call cip_h(ro,pr,vx,te,vxm,rodx,tedx,vxdxm,dt,gm,dx,dxm,ix)
+        そのほかMHDや非一様断面など状況に応じて呼ぶサブルーチンを変える
+
+    境界条件
+    負値チェック
+
+時間積分ループ脱出分岐テスト
+終了処理
+(終了)
+
+----------------------------------------------------------------------
+
+◯使用する外部サブルーチン
+
+このモジュールは以下のサブルーチンに依存するので、
+実行形式ファイルをつくるときに以下のどちらかの方法をとる。
+  (1) ライブラリからリンクする
+  (2) ソースをコンパイルリンクする
+
+-----------------------------
+CANS1D common モジュール
+   cfl_*
+   grdrdy
+   scrdy（非一様断面計算のとき）
+
+----------------------------------------------------------------------
+
+◯各サブルーチンと引数の説明。
+
+cip_a(ro,rodx,dt,vx,vxm,dx,dxm,ix)
+
+cip_h(ro,pr,vx,te,vxm,rodx,tedx,vxdxm,dt,gm,dx,dxm,ix)
+cip_h_c(ro,pr,vx,te,vxm,rodx,tedx,vxdxm
+     &   ,dt,gm,sc,scm,dx,dxm,ix)
+cip_h_g(ro,pr,vx,te,vxm,rodx,tedx,vxdxm
+     &    ,dt,gm,gxm,dx,dxm,ix)
+cip_h_cg(ro,pr,vx,te,vxm,rodx,tedx,vxdxm
+     &   ,dt,gm,gxm,sc,scm,dx,dxm,ix)
+
+cip_ht(ro,vx,vxm,rodx,vxdxm,dt,cs2,dx,dxm,ix)
+cip_ht_c(ro,vx,vxm,rodx,vxdxm,dt,cs2,sc,scm,dx,dxm,ix)
+cip_ht_g(ro,vx,vxm,rodx,vxdxm,dt,cs2,gxm,dx,dxm,ix)
+cip_ht_cg(ro,vx,vxm,rodx,vxdxm
+     &         ,dt,cs2,gxm,sc,scm,dx,dxm,ix)
+
+cip_m(ro,pr,vx,vy,by,te,vxm,rodx,tedx,vxdxm,vydx
+     &    ,bx,bxm,dt,gm,dx,dxm,ix)
+cip_m_c(ro,pr,vx,vy,by,te,vxm,rodx,tedx,vxdxm,vydx
+     &    ,bx,bxm,dt,gm,sc,scm,dx,dxm,ix)
+cip_m_g(ro,pr,vx,vy,by,te,vxm,rodx,tedx,vxdxm,vydx
+     &    ,bx,bxm,dt,gm,gxm,gy,dx,dxm,ix)
+cip_m_cg(ro,pr,vx,vy,by,te,vxm,rodx,tedx,vxdxm,vydx
+     &    ,bx,bxm,dt,gm,gxm,gy,sc,scm,dx,dxm,ix)
+cip_m_cgr(ro,pr,vx,vy,by,te,vxm,rodx,tedx,vxdxm,vydx
+     &    ,bx,bxm,dt,gm,gxm,sc,scm,rr,rrm,dx,dxm,ix)
+
+cip_m3(ro,pr,vx,vy,vz,by,bz,te,vxm
+     &    ,rodx,tedx,vxdxm,vydx,vzdx
+     &    ,bx,bxm,dt,gm,dx,dxm,ix)
+cip_m3_c(ro,pr,vx,vy,vz,by,bz,te,vxm
+     &    ,rodx,tedx,vxdxm,vydx,vzdx
+     &    ,bx,bxm,dt,gm,sc,scm,dx,dxm,ix)
+cip_m3_g(ro,pr,vx,vy,vz,by,bz,te,vxm
+     &    ,rodx,tedx,vxdxm,vydx,vzdx
+     &    ,bx,bxm,dt,gm,gxm,gy,gz,dx,dxm,ix)
+cip_m3_cg(ro,pr,vx,vy,vz,by,bz,te,vxm
+     &    ,rodx,tedx,vxdxm,vydx,vzdx
+     &    ,bx,bxm,dt,gm,gxm,gy,gz,sc,scm,dx,dxm,ix)
+
+cip_mt(ro,vx,vy,by,te,vxm,rodx,vxdxm,vydx
+     &    ,bx,bxm,dt,cs2,dx,dxm,ix)
+cip_mt_c(ro,vx,vy,by,te,vxm,rodx,vxdxm,vydx
+     &    ,bx,bxm,dt,cs2,sc,scm,dx,dxm,ix)
+cip_mt_g(ro,vx,vy,by,te,vxm,rodx,vxdxm,vydx
+     &    ,bx,bxm,dt,cs2,gxm,gy,dx,dxm,ix)
+cip_mt_cg(ro,vx,vy,by,te,vxm,rodx,vxdxm,vydx
+     &    ,bx,bxm,dt,cs2,gxm,gy,sc,scm,dx,dxm,ix)
+cip_mt_cgr(ro,vx,vy,by,te,vxm,rodx,vxdxm,vydx
+     &    ,bx,bxm,dt,cs2,gxm,sc,scm,rr,rrm,dx,dxm,ix)
+
+cip_m3t(ro,vx,vy,vz,by,bz,te,vxm
+     &    ,rodx,vxdxm,vydx,vzdx
+     &    ,bx,bxm,dt,cs2,dx,dxm,ix)
+cip_m3t_c(ro,vx,vy,vz,by,bz,te,vxm
+     &    ,rodx,vxdxm,vydx,vzdx
+     &    ,bx,bxm,dt,cs2,sc,scm,dx,dxm,ix)
+cip_m3t_g(ro,vx,vy,vz,by,bz,te,vxm
+     &    ,rodx,vxdxm,vydx,vzdx
+     &    ,bx,bxm,dt,cs2,gxm,gy,gz,dx,dxm,ix)
+cip_m3t_cg(ro,vx,vy,vz,by,bz,te,vxm
+     &    ,rodx,vxdxm,vydx,vzdx
+     &    ,bx,bxm,dt,cs2,gxm,gy,gz,sc,scm,dx,dxm,ix)
+
+  目的
+    流体エンジン本体
+      cip_a     移流
+      cip_h     流体一様断面用
+      cip_h_g   流体一様断面重力あり用
+      cip_h_c   流体非一様断面用
+      cip_h_cg  流体非一様断面重力あり用
+      cip_ht    等温流体一様断面用
+      cip_ht_g  等温流体一様断面重力あり用
+      cip_ht_c  等温流体非一様断面用
+      cip_ht_cg 等温流体非一様断面重力あり用
+      cip_m     MHD一様断面用
+      cip_m_g   MHD一様断面重力あり用
+      cip_m_c   MHD非一様断面
+      cip_m_cg  MHD非一様断面重力あり用
+      cip_m_cgr MHD非一様断面重力あり回転あり用
+      cip_m3    3成分MHD一様断面用
+      cip_m3_c  3成分MHD非一様断面用
+      cip_m3_g  3成分MHD一様断面重力あり用
+      cip_m3_cg 3成分MHD非一様断面重力あり用
+      cip_mt     等温MHD一様断面用
+      cip_mt_g   等温MHD一様断面重力あり用
+      cip_mt_c   等温MHD非一様断面
+      cip_mt_cg  等温MHD非一様断面重力あり用
+      cip_mt_cgr 等温MHD非一様断面重力あり回転あり用
+      cip_m3t    等温3成分MHD一様断面用
+      cip_m3t_c  等温3成分MHD非一様断面用
+      cip_m3t_g  等温3成分MHD一様断面重力あり用
+      cip_m3t_cg 等温3成分MHD非一様断面重力あり用
+  入出力
+    ro(ix) te(ix) vxm(ix) vy(ix) by(ix) vz(ix) bz(ix) 物理量データ
+    rodx(ix) tedx(ix) vxdxm(ix) vydx(ix) bydx(ix) vzdx(ix) bzdx(ix) 
+      物理量微分データ
+  出力
+    pr(ix) vx(ix) 
+  入力
+    dt 時間刻み
+    gm 比熱比γ
+    cs2 音速**2
+    gx(ix) gxm(ix) 重力
+    gy(ix) gym(ix) 重力
+    gz(ix) gzm(ix) 重力
+    bx(ix) bxm(ix) 重力
+    sc(ix)   断面積（グリッド点上で定義）
+    scm(ix)  断面積（グリッド点間で定義）
+    dsc(ix)   微分断面積（グリッド点上で定義）
+    dscm(ix)  微分断面積（グリッド点間で定義）
+    dx(ix) グリッド刻み（グリッド点上で定義）
+    dxm(ix) グリッド刻み（グリッド点間で定義）
+    ix    データの大きさ
+  内部パラメータ
+-------------------------------------------
+
+ciprdy_a(ro,rodx,dx,ix)
+ciprdy_h(te,vxm,rodx,tedx,vxdxm,ro,pr,vx,gm,dx,dxm,ix)
+ciprdy_ht(vxm,rodx,vxdxm,ro,vx,dx,dxm,ix)
+ciprdy_m(te,vxm,rodx,tedx,vxdxm,vydx,ro,pr,vx,vy
+     &    ,gm,dx,dxm,ix)
+ciprdy_m3(te,vxm,rodx,tedx,vxdxm,vydx,vzdx
+     &    ,ro,pr,vx,vy,vz,gm,dx,dxm,ix)
+  目的
+    CIP法の準備一般
+       温度を計算する；グリッド間の速度を計算する；物理量微分を計算する；
+  出力
+    te(ix) 温度
+    vxm(ix) グリッド間の速度
+    rodx(ix) tedx(ix) vxdxm(ix) vydx(ix) bydx(ix) vzdx(ix) bzdx(ix) 
+      物理量微分データ
+  入力 
+    ro(ix) vx(ix) vy(ix) by(ix) vz(ix) bz(ix) 物理量データ
+    gm 比熱比γ
+    dx(ix) グリッド刻み（グリッド点上で定義）
+    dxm(ix) グリッド刻み（グリッド点間で定義）
+    ix    データの大きさ
+-------------------------------------------
+
+cipdxsrc(dadx,da,dah,u,dt,dx,ix)
+  目的
+    物理量微分の非移流フェイズ
+  入出力
+    dadx(ix) 物理量微分データ
+  入力
+    da(ix) 物理量（前ステップの値）
+    dah(ix) 物理量（非移流フェイズ後の値）
+    u(ix) 移流速度
+    dt 時間刻み
+    dx(ix) グリッド刻み（グリッド点上で定義）
+    ix    データの大きさ
+
+cipadv(da,dadx,u,isft,dt,dxx,ix)
+  目的
+    物理量・物理量微分の移流フェイズ
+  入出力
+    da(ix) 物理量
+    dadx(ix) 物理量微分データ
+  入力
+    u(ix) 移流速度
+    isft 
+     =0:グリッド点上で定義された物理量に対して
+     =1:グリッド点間で定義された物理量に対して
+    dt 時間刻み
+    dxx(ix) グリッド刻み
+     =dxm:グリッド点上で定義された物理量に対して
+     =dx :グリッド点間で定義された物理量に対して
+    ix    データの大きさ
+
+-------------------------------------------
+
+＊以下のルーチンは MOC/CT 法で使用
+
+ctranspt(byh,vxm,vym,bxm,bym,dt,dx,ix)
+  目的
+    「Constrained Transport」法
+  入出力
+    byh(ix) 磁場（グリッド点上で定義）
+  入力
+    vxm(ix) vym(ix) 速度場 （グリッド点間で定義）
+    bxm(ix) bym(ix) 磁場（グリッド点間で定義）
+    dx(ix) グリッド刻み（グリッド点上で定義）
+    dt 時間刻み
+    ix    データの大きさ
+
+moc(vym,bym,ro,vxm,bxm,vy,by,dt,dxm,ix)
+  目的
+    特性曲線「Method of Charactreristics」法による物理量の外挿
+  入出力
+    vym(ix) 速度場 （グリッド点間で定義）
+    bym(ix) 磁場（グリッド点間で定義）
+  入力
+    ro(ix)
+    vxm(ix)
+    bxm(ix)
+    vy(ix) 速度場 （グリッド点上で定義）
+    by(ix) 磁場（グリッド点上で定義）
+    dxm(ix) グリッド刻み（グリッド点間で定義）
+    dt 時間刻み
+    ix    データの大きさ
+
+moclag(bym,ro,bxm,vy,by,dt,dxm,ix)
+  目的
+    特性曲線「Method of Charactreristics」法による物理量の外挿
+  入出力
+    bym(ix) 磁場（グリッド点間で定義）
+  入力
+    ro(ix)
+    vxm(ix)
+    bxm(ix)
+    vy(ix) 速度場 （グリッド点上で定義）
+    by(ix) 磁場（グリッド点上で定義）
+    dxm(ix) グリッド刻み（グリッド点間で定義）
+    dt 時間刻み
+    ix    データの大きさ
+
+intpvl(qql,qqr,qq,cal,car,dxm,dt,ix)
+  目的
+    van Leer内挿
+  出力
+    qql(ix) qqr(ix) 内挿して求めた物理量（グリッド間で定義）
+  入力
+    qq(ix) 物理量（グリッド上で定義）
+    cal(ix) car(ix) 特性速度
+    dxm(ix) グリッド刻み（グリッド点間で定義）
+    dt 時間刻み
+    ix    データの大きさ
+
+-------------------------------------------

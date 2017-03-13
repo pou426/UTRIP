@@ -1,0 +1,145 @@
+
+
+CANS1D hdroe モジュール
+
+       ver.0  2001.9.7
+
+----------------------------------------------------------------------
+
+◯概要
+
+このモジュールは、流体力学方程式・MHD方程式を
+Roe＋MUSCL＋TVD法で解くためのものです。
+
+----------------------------------------------------------------------
+
+◯インストール
+
+1. Makefileを編集。マクロ"CANS_INCLUDE_DIR"の値を適当に設定する。
+2. makeによりコンパイル。
+3. libroe.aができるのでこれを適当なディレクトリにコピーする。
+
+----------------------------------------------------------------------
+
+◯使用法
+
+CANS1Dディストリビューションのmd_shktb（流体一様断面）、
+md_sedov（流体非一様断面）、md_mhdshktb（MHD一様断面）、
+md_spicule（MHD非一様断面）を参考にする。
+
+(開始)
+初期処理
+    モデル・パラメータの定義
+      物理量ro pr、グリッドx dx dxmなど。断面非一様の場合はscも。
+      パラメータ gm が必須。
+      
+時間積分ループ
+    時間刻み決定 dt （ふつうはcflhdや cflmhdを使う）
+    流体積分         
+
+        流体一様断面のときは
+        call roe_h(ro,pr,vx,dt,gm,dx,ix)
+
+        流体一様断面重力ありのときは
+        call roe_h_g(ro,pr,vx,dt,gm,gx,dx,ix)
+
+        流体非一様断面のときは  
+        call roe_h_c(ro,pr,vx,dt,gm,sc,dsc,sch,dx,ix)
+
+        流体非一様断面重力ありのときは  
+        call roe_h_gc(ro,pr,vx,dt,gm,gx,sc,dsc,sch,dx,ix)
+
+        MHD一様断面のときは
+         call roe_m(ro,pr,vx,vy,by,bx,dt,gm,dx,ix)
+
+        MHD一様断面重力ありのときは
+         call roe_m_g(ro,pr,vx,vy,by,bx,dt,gm,gx,dx,ix)
+
+        MHD非一様断面重力ありのときは
+         call roe_m_gc(ro,pr,vx,vy,by,bx,bxh,dt,gm,gx
+     &            ,sc,dsc,sch,dx,ix)
+
+    境界条件
+    負値チェック
+
+時間積分ループ脱出分岐テスト
+終了処理
+(終了)
+
+----------------------------------------------------------------------
+
+◯使用する外部サブルーチン
+
+このモジュールは以下のサブルーチンに依存するので、
+実行形式ファイルをつくるときに以下のどちらかの方法をとる。
+  (1) ライブラリからリンクする
+  (2) ソースをコンパイルリンクする
+
+-----------------------------
+CANS1D common モジュール
+   cflhd(dt,merr,gm,ro,pr,vx,dxm,ix)
+   cflmhd(dt,merr,gm,ro,pr,vx,vy,bx,by,dx,ix) （MHDのとき）
+   grdrdy(dxm,xh,dx,x,ix)
+   scrdy(dsc,dsch,sc,sch,dx,dxm,ix)  （非一様断面計算のとき）
+   check(ro,pr,vx,ns,time,ix)
+
+----------------------------------------------------------------------
+
+◯各サブルーチンと引数の説明。
+
+roe_h(ro,pr,vx,dt,gm,dx,ix)
+roe_h_g(ro,pr,vx,dt,gm,gx,dx,ix)
+roe_h_c(ro,pr,vx,dt,gm,sc,dsc,sch,dx,ix)
+roe_h_gc(ro,pr,vx,dt,gm,gx,sc,dsc,sch,dx,ix)
+roe_m(ro,pr,vx,vy,by,bx,dt,gm,dx,ix)
+roe_m_g(ro,pr,vx,vy,by,bx,dt,gm,gx,dx,ix)
+roe_m_gc(ro,pr,vx,vy,by,bx,bxh,dt,gm,gx,sc,dsc,sch,dx,ix)
+
+
+  目的
+    流体エンジン本体
+      roe_h     流体一様断面用
+      roe_h_g   流体一様断面重力あり用
+      roe_h_c   流体非一様断面用
+      roe_h_gc  流体非一様断面重力あり用
+      roe_m     MHD一様断面用
+      roe_m_g   MHD一様断面重力あり用
+      roe_m_gc  MHD非一様断面重力あり用
+  入出力
+    ro(ix) pr(ix) vx(ix) vy(ix) by(ix) 物理量データ
+  入力
+    dt 時間刻み
+    gm 比熱比γ
+    gx(ix) gxh(ix) 重力
+    bx(ix) bxh(ix) 重力
+    sc(ix)   断面積（グリッド点上で定義）
+    sch(ix)  断面積（グリッド点間で定義）
+    dsc(ix)   微分断面積（グリッド点上で定義）
+    dsch(ix)  微分断面積（グリッド点間で定義）
+    dx(ix) グリッド刻み（グリッド点間で定義）
+    ix    データの大きさ
+  内部パラメータ
+    qav 人工粘性係数
+-------------------------------------------
+
+froehd(f,gm,row,prw,vxw,ix)
+froemhd(f,gm,row,prw,vxw,vyw,bxw,byw,ix)
+  目的
+    Rieman問題を解いてフラックスを計算する
+  出力
+    f(ix,3) 流体 またはf(ix,5)MHD フラックス
+  入力 
+    row(ix,2),prw(ix,2),vxw(ix,2),vyw(ix,2),bxw(ix,2),byw(ix,2) 
+          グリッド境界両側の物理量
+    ix    データの大きさ
+-------------------------------------------
+
+tvdminmod(da,daw,ix)
+  目的
+    MUSCL＋TVD制限関数によりグリッド境界両側の値を計算する
+  出力
+    daw(ix) グリッド境界両側の物理量
+  入力 
+    da(ix)  物理量
+    ix    データの大きさ
+-------------------------------------------

@@ -1,0 +1,4 @@
+if (getenv('DISPLAY') ne '') then device,true_color=24
+if (getenv('DISPLAY') ne '') then device,get_visual_name=visual
+if (getenv('DISPLAY') ne '') then $
+if (visual eq 'TrueColor' or visual eq 'DirectColor') then device,decomposed=0,/bypass_translation

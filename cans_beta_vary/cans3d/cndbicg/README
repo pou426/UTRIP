@@ -1,0 +1,183 @@
+
+
+CANS3D cndbicg モジュール
+
+       ver.0  2004.8.31
+
+----------------------------------------------------------------------
+
+◯概要
+
+このモジュールは、熱伝導を陰解法（時間精度1次：行列反転はBiCG+ILU法）
+で解くためのものです。
+
+----------------------------------------------------------------------
+
+◯インストール
+
+1. Makefileを編集。マクロ"CANS_INCLUDE_DIR"の値を適当に設定する。
+2. makeによりコンパイル。
+3. libcndbicg.aができるのでこれを適当なディレクトリにコピーする。
+
+----------------------------------------------------------------------
+
+◯使用法
+
+CANS3Dディストリビューションのmd_cndtb（一様断面）を参考にする。
+
+(開始)
+初期処理
+    モデル・パラメータの定義
+      物理量ro pr、グリッドx,y,z,dx,dy,dzなど。断面非一様の場合はscも。
+      パラメータ gm rkap0が必須。
+      
+時間積分ループ
+    時間刻み決定 dt
+    熱伝導積分         
+      call cndbicg(ro,pr,mi,err,dt,gm,rkap0,margin,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+    境界条件
+    負値チェック
+時間積分ループ脱出分岐テスト
+終了処理
+(終了)
+
+----------------------------------------------------------------------
+
+◯使用する外部サブルーチン
+
+このモジュールは以下のサブルーチンに依存するので、
+実行形式ファイルをつくるときに以下のどちらかの方法をとる。
+  (1) ライブラリからリンクする
+  (2) ソースをコンパイルリンクする
+
+-----------------------------
+CANS3D common モジュール
+   prtote(te,ro,pr,gm,ix,jx,kx)
+   tetopr(ro,pr,te,gm,ix,jx,kx)
+   chkte(te,ix,jx,kx)
+
+CANS3D bc モジュール
+----------------------------------------------------------------------
+
+◯各サブルーチンと引数の説明。
+
+cndbicg(ro,pr,mi,err,dt,gm,rkap0,margin,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+cndbicg_c(ro,pr,mi,err,dt,gm,rkap0,margin,x,xh,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+cndbicg_m(ro,pr,mi,err,dt,gm,rkap0,bx,by,bz,margin,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+cndbicg_mc(ro,pr,mi,err,dt,gm,rkap0,bx,by,bz,margin,x,xh,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+
+  目的
+    熱伝導エンジン本体
+  入出力
+    ro(ix,jx,kx)     密度配列
+    pr(ix,jx,kx)     圧力配列
+  出力
+    mi 反復回数
+    err BiCG残差最終値
+  入力
+    dt 時間刻み
+    gm 比熱比γ
+    rkap0 熱伝導の強さ
+            1/rkap0が、te=1,ro=1のときの無次元熱伝導時間スケール
+    dx(ix),dy(jx),dz(kx) グリッド刻み（グリッド点間で定義）
+    dxm(ix),dym(jx),dzm(kx) グリッド刻み（グリッド点上で定義）
+    ix,jx,kx    データの大きさ
+    bx(ix,jx,kx),by(ix,jx,kx),bz(ix,jx,kx)  磁場配列
+  内部パラメータ
+    milim  BiCG反復回数miの最大臨界値。
+    eps0   BiCG残差の目標値。
+
+-------------------------------------------
+ccfspt(cmat,src,rkap0,gm,dt,te,ro,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+ccfspt_m(cmat,src,rkap0,gm,dt,te,ro,bx,by,bz,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+ccfspt_c(cmat,src,rkap0,gm,dt,te,ro,x,xh,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+ccfspt_mc(cmat,src,rkap0,gm,dt,te,ro,bx,by,bz,x,xh,dx,dxm,ix,dy,dym,jx,dz,dzm,kx)
+
+  目的
+    熱伝導係数（spt: Spitzer型、unf:一様）の定義
+   （ccfspt_mは磁場依存性あり）
+  出力
+    cmat(ix,jx,kx,1-7)  熱伝導係数配列
+    cmat(ix,jx,kx,1)     d/dtの係数*(1/dt)
+    cmat(ix,jx,kx,{2,3}) d^2/dx^2の係数
+    cmat(ix,jx,kx,{4,5}) d^2/dy^2の係数
+    cmat(ix,jx,kx,{6,7}) d^2/dz^2の係数
+  入力
+    dt    時間刻み
+    gm    比熱比γ
+    rkap0 熱伝導の強さ
+          1/rkap0が、te=1,ro=1のときの無次元熱伝導時間スケール
+    ix,jx,kx         データの大きさ
+    ro(ix,jx,kx)     密度配列
+    te(ix,jx,kx)     温度配列
+    bx(ix,jx,kx),by(ix,jx,kx),bz(ix,jx,kx)  磁場配列
+
+-------------------------------------------
+gtnorm(anorm,res,ix,jx,kx)
+  目的
+    BICG法の残差の計算
+  出力
+    anorm  残差
+  入力
+    res(ix,jx,kx)    BiCG用残差配列
+    ix,jx,kx    データの大きさ
+
+-------------------------------------------
+iludcmp(cmat,dmat,margin,ix,jx,kx)
+  目的
+   行列反復法のための前処理
+  入力
+   cmat(ix,jx,kx,7) 連立方程式係数行列
+  出力
+   dmat(ix,jx,kx)   前処理行列対角成分
+    
+-------------------------------------------
+bicgstab1(r,rtld,p,v,t,phat,shat,s,work,xx,src,margin,ix,jx,kx)
+bicgstab2(r,rtld,p,v,t,phat,shat,s,work,rho1,alpha,omega,xx,
+          res,cmat,dmat,margin,ix,jx,kx,mi)
+  目的
+    BiCG法反復部分
+  入出力
+    xx(ix,jx,kx)     解
+  出力
+    res(ix,jx,kx)    BiCG用残差配列
+    mi               反復回数
+  入力
+    ix,jx,kx    データの大きさ
+    margin      境界マージン
+    cmat(ix,jx,kx,7) BiCG用行列     Ax=bのA
+    dmat(ix,jx,kx)   ILU分解 対角成分
+    work(ix,jx,kx,7) 作業用ベクトル配列
+    src(ix,jx,kx)    BiCG用ベクトル Ax=bのb
+    r,rtld,p,v,t,phat,shat,s 作業ベクトルのインデックス
+-------------------------------------------
+psolv(work,i1,i2,dmat,cmat,margin,ix,jx,kx)
+  目的
+    x=M^-1y を解く。
+  出力
+    work(ix,jx,kx,i1) ベクトル  x=M^-1y の y
+  入力
+    work(ix,jx,kx,i2) ベクトル  x=M^-1y の x
+    i1,i2 作業用ベクトルのインデックス
+    ix,jx,kx    データの大きさ
+    margin      境界マージン
+    cmat(ix,jx,kx,7) BiCG用 係数行列     Ax=bのA
+    dmat(ix,jx,kx)   ILU分解 対角成分
+
+-------------------------------------------
+cndprm(rkap0,gm,tenml,denml,rlnml)
+  目的
+    Spitzerモデルに基づいて、有次元量を無次元パラメータに変換
+  出力
+    rkap0 熱伝導の強さ
+            1/rkap0が、te=1,ro=1のときの無次元熱伝導時間スケール
+  入力
+    gm 比熱比γ
+    tenml 温度単位[K]
+    denml 密度単位[cm^-3]
+    tenml 長さ単位[cm]
+
+----------------------------------------------------------------------
+
+
+
